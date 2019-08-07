@@ -56,7 +56,7 @@
 #' @importFrom utils setTxtProgressBar txtProgressBar
 #' @importFrom parallel detectCores makeCluster stopCluster
 #' @importFrom doParallel registerDoParallel
-#' @importFrom foreach foreach
+#' @importFrom foreach foreach %dopar%
 #' @examples
 #' \dontrun{
 #' if(interactive()){
