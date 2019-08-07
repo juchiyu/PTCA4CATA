@@ -54,7 +54,9 @@
 #' a step before plotting confidence interval ellipses for
 #' group means
 #' @importFrom utils setTxtProgressBar txtProgressBar
-#' @import foreach doParallel
+#' @importFrom parallel detectCores makeCluster stopCluster
+#' @importFrom doParallel registerDoParallel
+#' @importFrom foreach foreach
 #' @examples
 #' \dontrun{
 #' if(interactive()){
@@ -119,12 +121,12 @@ Boot4Mean <- function(Data , design,
     } # End of loop
   }else{
     # Setup parallel enviornment
-    cores <- detectCores()
+    cores <- parallel::detectCores()
     cl <- makeCluster(cores[1]-1) # Leave 1 core on computer open to not overload
     registerDoParallel(cl) # register 'parallel'parallel' with 'foreach'
 
-    # Save output of parallel loop to paral_outmat (result is a list)
-    paral_outmat <- foreach(m=1:niter, .combine = c) %dopar% { # Bootstrap parallized loop
+    # Save output of parallel loop to a list, paral_outmat
+    paral_outmat <- foreach(m=1:niter) %dopar% {
       BootInd = boot.design(design)
       GetMean(Data[BootInd,],design[BootInd])
     }
