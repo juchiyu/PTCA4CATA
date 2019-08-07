@@ -39,6 +39,8 @@
 #'  the number of bootstrap iterations.
 #' @param suppressProgressBar (default = \code{TRUE}), when
 #' \code{TRUE} suppress the progress bar.
+#' @param parallelize (default = \code{FALSE}), when
+#' \code{TRUE} use foreach to parallelize bootstrap.
 #' @return A list with \code{BootCube:} a groups by
 #' variables by iterations brick of bootstrapped means, and
 #' \code{GroupMeans}: the groups by variables
@@ -52,6 +54,7 @@
 #' a step before plotting confidence interval ellipses for
 #' group means
 #' @importFrom utils setTxtProgressBar txtProgressBar
+#' @import foreach doParallel
 #' @examples
 #' \dontrun{
 #' if(interactive()){
@@ -62,7 +65,8 @@
 
 Boot4Mean <- function(Data , design,
                       niter = 100,
-                      suppressProgressBar = TRUE){
+                      suppressProgressBar = TRUE,
+                      parallelize = FALSE){
   # Boostrap the means of the groups
   # According to a Design/Factor Matrix
   # Private functions
@@ -92,23 +96,43 @@ Boot4Mean <- function(Data , design,
                                    FUN = mean) [-1])
   Truc = as.matrix(aggregate(Data,by = list(design),
                              FUN = mean) )
-                                   # A silly way to get the names
+  # A silly way to get the names
   Nom2Row <- as.factor(Truc[,1])
   rownames(FixedMeans) <- Nom2Row
-  nG = nrow(FixedMeans)
-  nVar = ncol(FixedMeans)
-  ZeCubeOfMeans = array(NA, dim = c(nG,nVar,niter))
+
   if (suppressProgressBar != TRUE){
     print('Starting Bootstrap.')
     pb <-txtProgressBar(min = 0, max = niter,
                         initial = 0, char = "=",
                         title = 'Bootstrap Iterations', style = 1)
   }
-  for (m in 1:niter){ # Bootstrap loop
-    BootInd = boot.design(design)
-    ZeCubeOfMeans[,,m] =  GetMean(Data[BootInd,],design[BootInd])
-    if (suppressProgressBar != TRUE){setTxtProgressBar(pb, m)}
-  } # End of loop
+
+  if(parallelize!=TRUE){
+    nG = nrow(FixedMeans)
+    nVar = ncol(FixedMeans)
+    ZeCubeOfMeans = array(NA, dim = c(nG,nVar,niter))
+
+    for (m in 1:niter){ # Bootstrap loop
+      BootInd = boot.design(design)
+      ZeCubeOfMeans[,,m] =  GetMean(Data[BootInd,],design[BootInd])
+      if (suppressProgressBar != TRUE){setTxtProgressBar(pb, m)}
+    } # End of loop
+  }else{
+    # Setup parallel enviornment
+    cores <- detectCores()
+    cl <- makeCluster(cores[1]-1) # Leave 1 core on computer open to not overload
+    registerDoParallel(cl) # register 'parallel'parallel' with 'foreach'
+
+    # Save output of parallel loop to paral_outmat (result is a list)
+    paral_outmat <- foreach(m=1:niter, .combine = c) %dopar% { # Bootstrap parallized loop
+      BootInd = boot.design(design)
+      GetMean(Data[BootInd,],design[BootInd])
+    }
+    ZeCubeOfMeans <- simplify2array(paral_outmat) # squash list into 3d array
+
+    stopCluster(cl) # stop cluster
+  }
+
   if(is.null(colnames(Data))){# give column names if not herited
     colnames(ZeCubeOfMeans) <-
       paste0('V-',seq(1,ncol(Data)))->colnames(FixedMeans)
@@ -118,7 +142,7 @@ Boot4Mean <- function(Data , design,
   return.list <- structure( list(BootCube=ZeCubeOfMeans,
                                  GroupMeans=FixedMeans,
                                  BootstrappedGroupMeans =
-                                        BootstrappedGroupMeans),
+                                   BootstrappedGroupMeans),
                             class = 'bootGroup')
   return(return.list)
 }  # End of function Boot4Mean

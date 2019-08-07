@@ -6,7 +6,8 @@
 estimates for the means of groups of observations
 described by several variables (e.g., factor scores).}
 \usage{
-Boot4Mean(Data, design, niter = 100, suppressProgressBar = TRUE)
+Boot4Mean(Data, design, niter = 100, suppressProgressBar = TRUE,
+  parallelize = FALSE)
 }
 \arguments{
 \item{Data}{An observations by variables data set.}
@@ -19,6 +20,9 @@ the number of bootstrap iterations.}
 
 \item{suppressProgressBar}{(default = \code{TRUE}), when
 \code{TRUE} suppress the progress bar.}
+
+\item{parallelize}{(default = \code{FALSE}), when
+\code{TRUE} use foreach to parallelize bootstrap.}
 }
 \value{
 A list with \code{BootCube:} a groups by
