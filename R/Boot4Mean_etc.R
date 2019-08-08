@@ -120,10 +120,15 @@ Boot4Mean <- function(Data , design,
       if (suppressProgressBar != TRUE){setTxtProgressBar(pb, m)}
     } # End of loop
   }else{
-    # Setup parallel enviornment
-    cores <- parallel::detectCores()
-    cl <- makeCluster(cores[1]-1) # Leave 1 core on computer open to not overload
-    registerDoParallel(cl) # register 'parallel'parallel' with 'foreach'
+    # === Setup parallel enviornment ===
+    cores <- detectCores()
+    if(cores==1){
+      cl <- makeCluster(1)
+    }else{
+      cl <- makeCluster(cores[1]-1) # Leave 1 core on computer open to not overload
+    }
+
+    registerDoParallel(cl) # register 'parallel' backend with 'foreach'
 
     # Save output of parallel loop to a list, paral_outmat
     paral_outmat <- foreach(m=1:niter) %dopar% {
