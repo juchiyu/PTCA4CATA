@@ -24,3 +24,4 @@ RoxygenNote: 6.1.1
 VignetteBuilder: utils
 URL: http://github.com/HerveAbdi/PTCA4CATA
 BugReports: http://github.com/HerveAbdi/PTCA4CATA/issues
+Remotes: github::HerveAbdi/data4PCCAR
