@@ -68,7 +68,8 @@
 Boot4Mean <- function(Data , design,
                       niter = 100,
                       suppressProgressBar = TRUE,
-                      parallelize = FALSE){
+                      parallelize = FALSE,
+                      seed = NULL){
   # Boostrap the means of the groups
   # According to a Design/Factor Matrix
   # Private functions
@@ -87,6 +88,9 @@ Boot4Mean <- function(Data , design,
     nGroups = length(ValG)
     # how many groups of observations do we want to look at
     for(i in 1:nGroups){
+      if(!is.null(seed)){
+        set.seed(seed)
+      }
       boot.index <- c(boot.index,sample(which(ZeGroup==ValG[i ]),
                                         replace=TRUE))
     }
@@ -129,6 +133,10 @@ Boot4Mean <- function(Data , design,
     }
 
     registerDoParallel(cl) # register 'parallel' backend with 'foreach'
+
+    if(!is.null(seed)){
+      registerDoRNG(seed = seed)
+    }
 
     # Save output of parallel loop to a list, paral_outmat
     paral_outmat <- foreach(m=1:niter) %dopar% {
