@@ -57,6 +57,7 @@
 #' @importFrom parallel detectCores makeCluster stopCluster
 #' @importFrom doParallel registerDoParallel
 #' @importFrom foreach foreach %dopar%
+#' @importFrom doRNG registerDoRNG
 #' @examples
 #' \dontrun{
 #' if(interactive()){
