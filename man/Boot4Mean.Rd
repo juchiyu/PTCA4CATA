@@ -7,7 +7,7 @@ estimates for the means of groups of observations
 described by several variables (e.g., factor scores).}
 \usage{
 Boot4Mean(Data, design, niter = 100, suppressProgressBar = TRUE,
-  parallelize = FALSE)
+  parallelize = FALSE, seed = NULL)
 }
 \arguments{
 \item{Data}{An observations by variables data set.}

@@ -57,7 +57,6 @@
 #' @importFrom parallel detectCores makeCluster stopCluster
 #' @importFrom doParallel registerDoParallel
 #' @importFrom foreach foreach %dopar%
-#' @importFrom doRNG registerDoRNG
 #' @examples
 #' \dontrun{
 #' if(interactive()){
@@ -81,7 +80,7 @@ Boot4Mean <- function(Data , design,
   }
   # ********* A function inspired from Derek *****************
   # get the bootstrap index values within groups
-  boot.design  <- function(design){# Compute Bootstrap
+  boot.design  <- function(design, seed){# Compute Bootstrap
     # indices according to a factor matrix
     boot.index <- vector()
     ZeGroup = as.factor(as.matrix(design))
@@ -134,10 +133,6 @@ Boot4Mean <- function(Data , design,
     }
 
     registerDoParallel(cl) # register 'parallel' backend with 'foreach'
-
-    if(!is.null(seed)){
-      registerDoRNG(seed = seed)
-    }
 
     # Save output of parallel loop to a list, paral_outmat
     paral_outmat <- foreach(m=1:niter) %dopar% {
